@@ -1,4 +1,4 @@
-pipeline{
+pipeline {
     agent any
      tools {
         maven 'Apache Maven 3.8.7'
@@ -8,7 +8,7 @@ pipeline{
         PATH = "/usr/share/maven:$PATH"
     }
     stages{
-        stage("Git Checkout"){
+        stage("Git Checkout SCM"){
             steps{
                 git 'https://github.com/mmbabu1988/my-web-sonar-nexus-tomcat.git'
             }
@@ -23,9 +23,9 @@ pipeline{
             steps{
                   nexusArtifactUploader artifacts: [
                        [
-                            artifactId: 'myweb', 
+                            artifactId: 'my-web', 
                             classifier: '', 
-                            file: "target/myweb-8.2.0.war", 
+                            file: "target/my-web-8.2.0.war", 
                             type: 'war'
                        ]
                   ], 
@@ -38,7 +38,7 @@ pipeline{
                   version: '8.2.0'  
               }
             }
-        stage("deploy-dev"){
+        stage("deployment-dev"){
             steps{
                 deploy adapters: [tomcat9(credentialsId: 'Tomcat_username_password', path: '', url: 'http://13.232.153.141:8080/')], contextPath: null, war: '**/*.war'
             
