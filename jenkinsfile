@@ -1,0 +1,48 @@
+pipeline {
+    agent any
+     tools {
+        maven 'Apache Maven 3.8.7'
+    }
+    
+    environment{
+        PATH = "/usr/share/maven:$PATH"
+    }
+    stages{
+        stage("Git Checkout SCM"){
+            steps{
+                git 'https://github.com/mmbabu1988/my-web-sonar-nexus-tomcat.git'
+            }
+        }
+        stage("Maven Build"){
+            steps{
+                sh "mvn clean sonar:sonar package"
+                
+            }
+        }
+        stage('Upload War To Nexus'){
+            steps{
+                  nexusArtifactUploader artifacts: [
+                       [
+                            artifactId: 'my-web', 
+                            classifier: '', 
+                            file: "target/my-web-8.2.0.war", 
+                            type: 'war'
+                       ]
+                  ], 
+                  credentialsId: 'nexus3', 
+                  groupId: 'in.javahome', 
+                  nexusUrl: '13.232.223.39:8081/', 
+                  nexusVersion: 'nexus3', 
+                  protocol: 'http', 
+                  repository: 'sample-releases', 
+                  version: '8.2.0'  
+              }
+            }
+        stage("deployment-dev"){
+            steps{
+                deploy adapters: [tomcat9(credentialsId: 'Tomcat_username_password', path: '', url: 'http://13.232.153.141:8080/')], contextPath: null, war: '**/*.war'
+            
+            }
+        }
+    }
+}
